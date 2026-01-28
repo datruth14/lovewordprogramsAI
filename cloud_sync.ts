@@ -39,29 +39,29 @@ async function main() {
 
       // Handle "table already exists" by adding IF NOT EXISTS if it's a CREATE TABLE
       if (statement.toUpperCase().startsWith('CREATE TABLE')) {
-          statement = statement.replace(/CREATE TABLE/i, 'CREATE TABLE IF NOT EXISTS');
+        statement = statement.replace(/CREATE TABLE/i, 'CREATE TABLE IF NOT EXISTS');
       }
-      
+
       // Handle "index already exists" by adding IF NOT EXISTS
       if (statement.toUpperCase().startsWith('CREATE UNIQUE INDEX')) {
-          statement = statement.replace(/CREATE UNIQUE INDEX/i, 'CREATE UNIQUE INDEX IF NOT EXISTS');
+        statement = statement.replace(/CREATE UNIQUE INDEX/i, 'CREATE UNIQUE INDEX IF NOT EXISTS');
       }
 
       try {
         await client.execute(statement);
       } catch (err: any) {
         if (err.message.includes('already exists')) {
-            console.log('⏩ Skipping (already exists):', statement.substring(0, 30) + '...');
+          console.log('⏩ Skipping (already exists):', statement.substring(0, 30) + '...');
         } else {
-            throw err;
+          throw err;
         }
       }
     }
 
     const rs = await client.execute("SELECT name FROM sqlite_master WHERE type='table';");
-    const tables = rs.rows.map(r => r.name).filter(n => !n.startsWith('sqlite_') && n !== '_prisma_migrations');
+    const tables = rs.rows.map(r => r.name).filter(n => n && typeof n === 'string' && !n.startsWith('sqlite_') && n !== '_prisma_migrations');
     console.log('✅ Success! Current Cloud Tables:', tables.join(', '));
-    
+
   } catch (e: any) {
     console.error('❌ Sync Failed:', e.message);
     process.exit(1);

@@ -5,7 +5,7 @@ import { decrypt } from '@/lib/session'
 const protectedRoutes = ['/dashboard', '/wallet', '/tasks', '/reports', '/admin']
 const publicRoutes = ['/', '/login', '/signup', '/api/auth/login', '/api/auth/signup']
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const path = req.nextUrl.pathname
     const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
     // We can't verify session *content* deeply in middleware easily without async decrypt, but we can check if cookie exists.
