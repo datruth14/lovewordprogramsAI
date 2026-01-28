@@ -7,8 +7,8 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-    const dbUrl = process.env.DATABASE_URL!
-    const authToken = process.env.DATABASE_AUTH_TOKEN
+    const dbUrl = process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL!
+    const authToken = process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN
     let url: string
 
     if (dbUrl.startsWith('file:./')) {
