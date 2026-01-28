@@ -25,9 +25,9 @@ async function main() {
 
   try {
     console.log('🏗 Generating SQL from Prisma schema...');
-    // We force DATABASE_URL to a file: protocol for the CLI diffing part to avoid the P1013 error
-    // The CLI just needs to see a file: protocol to match the "sqlite" provider during this offline step.
-    const sql = execSync('DATABASE_URL=file:./dev.db npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script').toString();
+    // We clear TURSO-related vars and force DATABASE_URL to a file: protocol for the CLI diffing part.
+    // This stops the CLI from seeing the "libsql://" protocol which causes P1013 validation errors.
+    const sql = execSync('TURSO_DATABASE_URL= DATABASE_AUTH_TOKEN= DATABASE_URL=file:./dev.db npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script').toString();
 
     console.log('🚀 Pushing schema to Cloud...');
 
