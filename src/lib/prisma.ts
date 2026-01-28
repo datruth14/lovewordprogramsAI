@@ -7,25 +7,21 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-    // Convert relative file: path to absolute for libsql
-    // DATABASE_URL is like "file:./data/app.db" - we need "file:///absolute/path/data/app.db"
     const dbUrl = process.env.DATABASE_URL!
+    const authToken = process.env.DATABASE_AUTH_TOKEN
     let url: string
 
     if (dbUrl.startsWith('file:./')) {
-        // Relative path - resolve to absolute
         const relativePath = dbUrl.replace('file:./', '')
         const absolutePath = path.resolve(process.cwd(), relativePath)
         url = `file://${absolutePath}`
     } else if (dbUrl.startsWith('file:')) {
-        // Already has file:, ensure proper format
         url = dbUrl.replace('file:', 'file://')
     } else {
-        // Other URL types (http, https for Turso etc)
         url = dbUrl
     }
 
-    const adapter = new PrismaLibSql({ url })
+    const adapter = new PrismaLibSql({ url, authToken })
     return new PrismaClient({ adapter })
 }
 
