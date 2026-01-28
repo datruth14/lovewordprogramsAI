@@ -430,7 +430,7 @@ export default function ReportsPage() {
                                             {aiLoading ? (
                                                 <><span className="spinner"></span> Working...</>
                                             ) : (
-                                                <>✨ Apply</>
+                                                <>✨ Apply (10 coins)</>
                                             )}
                                         </button>
                                     </div>
