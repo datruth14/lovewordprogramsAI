@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import CreateTaskModal from '@/components/CreateTaskModal';
 
-export default function Dashboard() {
+function DashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [tasks, setTasks] = useState([]);
@@ -68,8 +68,8 @@ export default function Dashboard() {
             {/* Payment Notification */}
             {notification && (
                 <div className={`mb-6 p-4 rounded-xl flex items-center justify-between transition-all ${notification.type === 'success'
-                        ? 'bg-green-50 border border-green-200 text-green-800'
-                        : 'bg-red-50 border border-red-200 text-red-800'
+                    ? 'bg-green-50 border border-green-200 text-green-800'
+                    : 'bg-red-50 border border-red-200 text-red-800'
                     }`}>
                     <div className="flex items-center gap-3">
                         <span className="text-2xl">{notification.type === 'success' ? '✅' : '❌'}</span>
@@ -173,5 +173,13 @@ export default function Dashboard() {
                 />
             )}
         </div>
+    );
+}
+
+export default function Dashboard() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading dashboard...</div>}>
+            <DashboardContent />
+        </Suspense>
     );
 }
