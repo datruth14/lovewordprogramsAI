@@ -34,7 +34,12 @@ function createPrismaClient() {
     }
 
     if (process.env.NODE_ENV === 'production') {
-        console.log('Using Database URL:', url.split('@').pop()); // Log only the host part for security
+        const isTurso = url.startsWith('libsql') || url.startsWith('https');
+        console.log('--- Prisma Connection Debug ---');
+        console.log('Database Mode:', isTurso ? '☁️ REMOTE (Turso)' : '📁 LOCAL (SQLite)');
+        console.log('Active URL:', url.split('@').pop());
+        console.log('Auth Token Present:', !!authToken);
+        console.log('-------------------------------');
     }
 
     const adapter = new PrismaLibSql({ url, authToken })
