@@ -3,7 +3,6 @@ import { execSync } from 'child_process';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 
-// Load variables
 if (fs.existsSync('.env.local')) {
   console.log('Loading from .env.local...');
   const envConfig = dotenv.parse(fs.readFileSync('.env.local'));
@@ -20,28 +19,49 @@ async function main() {
   }
 
   console.log('📡 Connecting to:', url.split('@').pop());
-
   const client = createClient({ url, authToken });
 
   try {
-    console.log('🏗 Generating SQL from Prisma schema...');
-    // We clear TURSO-related vars and force DATABASE_URL to a file: protocol for the CLI diffing part.
-    // This stops the CLI from seeing the "libsql://" protocol which causes P1013 validation errors.
+    console.log('🏗 Generating Migration SQL...');
     const sql = execSync('TURSO_DATABASE_URL= DATABASE_AUTH_TOKEN= DATABASE_URL=file:./dev.db npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script').toString();
 
-    console.log('🚀 Pushing schema to Cloud...');
-
-    // LibSQL batch execution
     const statements = sql
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .filter(s => s.length > 0);
 
-    for (const statement of statements) {
-      await client.execute(statement);
+    console.log(`🚀 Pushing ${statements.length} statements to Cloud...`);
+
+    for (let statement of statements) {
+      // Remove comments
+      statement = statement.replace(/^--.*$/gm, '').trim();
+      if (!statement) continue;
+
+      // Handle "table already exists" by adding IF NOT EXISTS if it's a CREATE TABLE
+      if (statement.toUpperCase().startsWith('CREATE TABLE')) {
+          statement = statement.replace(/CREATE TABLE/i, 'CREATE TABLE IF NOT EXISTS');
+      }
+      
+      // Handle "index already exists" by adding IF NOT EXISTS
+      if (statement.toUpperCase().startsWith('CREATE UNIQUE INDEX')) {
+          statement = statement.replace(/CREATE UNIQUE INDEX/i, 'CREATE UNIQUE INDEX IF NOT EXISTS');
+      }
+
+      try {
+        await client.execute(statement);
+      } catch (err: any) {
+        if (err.message.includes('already exists')) {
+            console.log('⏩ Skipping (already exists):', statement.substring(0, 30) + '...');
+        } else {
+            throw err;
+        }
+      }
     }
 
-    console.log('✅ Success! Your cloud database is now in sync.');
+    const rs = await client.execute("SELECT name FROM sqlite_master WHERE type='table';");
+    const tables = rs.rows.map(r => r.name).filter(n => !n.startsWith('sqlite_') && n !== '_prisma_migrations');
+    console.log('✅ Success! Current Cloud Tables:', tables.join(', '));
+    
   } catch (e: any) {
     console.error('❌ Sync Failed:', e.message);
     process.exit(1);
