@@ -189,13 +189,27 @@ export default function ReportsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fromDate, toDate })
             });
+
+            // Handle non-OK responses
+            if (!res.ok) {
+                let errorMessage = `Server error (${res.status})`;
+                try {
+                    const errorData = await res.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    // Response was not JSON (e.g. HTML error page)
+                    console.error('Failed to parse error JSON:', e);
+                }
+                throw new Error(errorMessage);
+            }
+
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
             const htmlContent = markdownToHtml(data.report);
             setReport(htmlContent);
             setViewState('editing');
         } catch (e: any) {
-            setError(e.message);
+            console.error('Report Generation Client Error:', e);
+            setError(e.message || 'Failed to generate report. Please try again.');
         } finally {
             setLoading(false);
         }
