@@ -142,9 +142,11 @@ button {
 /* Large Modal for Report Editor */
 .modal-large {
   max-width: 900px;
-  max-height: 90vh;
+  max-height: 85vh;
+  margin: 20px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .modal-header {
@@ -500,8 +502,8 @@ button {
 }
 
 .ckeditor-container .ck.ck-editor__main>.ck-editor__editable {
-  min-height: 350px;
-  max-height: 50vh;
+  min-height: 250px;
+  max-height: 40vh;
   overflow-y: auto;
 }
 
@@ -520,6 +522,9 @@ button {
 .editor-wrapper {
   flex: 1;
   min-height: 0;
+  max-height: 45vh;
+  overflow-y: auto;
+  margin-bottom: 16px;
 }
 
 .editor-loading {

@@ -5,20 +5,21 @@ import { verifyTransaction } from '@/lib/paystack'
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const reference = searchParams.get('reference')
+    const baseUrl = new URL(req.url).origin
 
     if (!reference) {
-        return NextResponse.redirect(new URL('/wallet?error=NoReference', req.url))
+        return NextResponse.redirect(`${baseUrl}/dashboard?payment=error&message=NoReference`)
     }
 
     try {
         const existingTx = await prisma.walletTransaction.findFirst({ where: { reference } })
         if (existingTx) {
-            return NextResponse.redirect(new URL('/wallet?error=AlreadyProcessed', req.url))
+            return NextResponse.redirect(`${baseUrl}/dashboard?payment=error&message=AlreadyProcessed`)
         }
 
         const result = await verifyTransaction(reference)
         if (!result.status || result.data.status !== 'success') {
-            return NextResponse.redirect(new URL('/wallet?error=VerificationFailed', req.url))
+            return NextResponse.redirect(`${baseUrl}/dashboard?payment=error&message=VerificationFailed`)
         }
 
         // Use user_id from metadata or find user by email?
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
         const user = await prisma.user.findUnique({ where: { email: userEmail } })
 
         if (!user) {
-            return NextResponse.redirect(new URL('/wallet?error=UserNotFound', req.url))
+            return NextResponse.redirect(`${baseUrl}/dashboard?payment=error&message=UserNotFound`)
         }
 
         const amountPaidKobo = result.data.amount
@@ -51,9 +52,9 @@ export async function GET(req: Request) {
             })
         })
 
-        return NextResponse.redirect(new URL('/wallet?success=TopUpComplete', req.url))
+        return NextResponse.redirect(`${baseUrl}/dashboard?payment=success&coins=${coinsToCredit}&amount=${amountPaidNaira}`)
     } catch (error) {
         console.error('Callback error', error)
-        return NextResponse.redirect(new URL('/wallet?error=ServerError', req.url))
+        return NextResponse.redirect(`${baseUrl}/dashboard?payment=error&message=ServerError`)
     }
 }

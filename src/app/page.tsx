@@ -43,7 +43,7 @@ export default function AuthPage() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1 className="auth-title">AI Report Assistant</h1>
+        <h1 className="auth-title">LWPAI Report Assistant</h1>
         <p className="auth-subtitle">
           {isLogin ? 'Sign in to access your dashboard' : 'Join today and get 1,000 free coins'}
         </p>

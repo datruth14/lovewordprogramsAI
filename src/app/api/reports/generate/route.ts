@@ -44,13 +44,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Monthly limit exceeded' }, { status: 429 })
     }
 
-    // Fetch Tasks
+    // Fetch Tasks - parse dates properly to include full day range
+    const startDate = new Date(fromDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(toDate);
+    endDate.setHours(23, 59, 59, 999);
+
     const tasks = await prisma.task.findMany({
         where: {
             user_id: userId,
             created_at: {
-                gte: new Date(fromDate),
-                lte: new Date(toDate)
+                gte: startDate,
+                lte: endDate
             }
         }
     })
@@ -62,7 +68,7 @@ export async function POST(req: Request) {
     // 2. Generate Report
     let reportContent: string
     try {
-        reportContent = await generateMonthlyReport(tasks as any)
+        reportContent = await generateMonthlyReport(tasks as any, fromDate, toDate)
     } catch (e) {
         return NextResponse.json({ error: 'AI failure' }, { status: 503 })
     }

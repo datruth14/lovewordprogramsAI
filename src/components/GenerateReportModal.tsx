@@ -338,7 +338,7 @@ ${report}
 
                 {viewState === 'editing' && (
                     <div className="report-editor">
-                        <div className="editor-wrapper">
+                        <div className="editor-wrapper mb-6">
                             <RichTextEditor
                                 value={report}
                                 onChange={setReport}
