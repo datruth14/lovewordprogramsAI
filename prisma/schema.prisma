@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  password_hash    String
+  daily_ai_limit   Int      @default(20)
+  monthly_ai_limit Int      @default(300)
+  created_at       DateTime @default(now())
+
+  wallet       Wallet?
+  transactions WalletTransaction[]
+  usage_logs   UsageLog[]
+  tasks        Task[]
+  reports      Report[]
+}
+
+model Wallet {
+  id         String   @id @default(uuid())
+  user_id    String   @unique
+  balance    Int      @default(0) // Coin based
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model WalletTransaction {
+  id          String   @id @default(uuid())
+  user_id     String
+  type        String // credit | debit
+  amount      Int
+  description String
+  reference   String? // Paystack reference
+  created_at  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model UsageLog {
+  id         String   @id @default(uuid())
+  user_id    String
+  action     String // polish_task | generate_report
+  coins_used Int
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id                  String   @id @default(uuid())
+  user_id             String
+  task_assigned       String
+  work_done           String
+  ai_polished_content String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id             String   @id @default(uuid())
+  user_id        String
+  from_date      DateTime
+  to_date        DateTime
+  report_content String
+  created_at     DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
