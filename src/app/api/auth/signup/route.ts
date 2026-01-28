@@ -51,8 +51,8 @@ export async function POST(req: Request) {
         await createSession(user.id)
 
         return NextResponse.json({ success: true, user: { id: user.id, email: user.email } })
-    } catch (error) {
+    } catch (error: any) {
         console.error('Signup error:', error)
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+        return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
     }
 }

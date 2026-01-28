@@ -12,7 +12,10 @@ function createPrismaClient() {
     const defaultUrl = process.env.DATABASE_URL
     const authToken = process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN
 
-    let rawUrl = tursoUrl || defaultUrl!
+    let rawUrl = tursoUrl || defaultUrl
+    if (!rawUrl) {
+        throw new Error('DATABASE_URL or TURSO_DATABASE_URL is not defined');
+    }
     let url: string
 
     // If we have both, and the default one is a local file but the turso one is remote, use turso
