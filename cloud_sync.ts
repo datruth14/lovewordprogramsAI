@@ -25,11 +25,12 @@ async function main() {
 
   try {
     console.log('🏗 Generating SQL from Prisma schema...');
-    // We use sqlite provider for diffing
-    const sql = execSync('npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script').toString();
+    // We force DATABASE_URL to a file: protocol for the CLI diffing part to avoid the P1013 error
+    // The CLI just needs to see a file: protocol to match the "sqlite" provider during this offline step.
+    const sql = execSync('DATABASE_URL=file:./dev.db npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script').toString();
 
     console.log('🚀 Pushing schema to Cloud...');
-    
+
     // LibSQL batch execution
     const statements = sql
       .split(';')
